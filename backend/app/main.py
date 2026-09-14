@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -45,15 +46,20 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
 
+    # Run on APScheduler's own background thread, not inline here: this
+    # coroutine blocks the ASGI startup event (and therefore the app
+    # binding to its port / answering health checks) until it returns, and
+    # _refresh_job makes ~2 blocking HTTP calls per ticker. Scheduling it
+    # with next_run_time=now still fires it immediately, just without
+    # holding up startup.
     scheduler.add_job(
         _refresh_job,
         "interval",
         minutes=settings.price_refresh_minutes,
         id="price_refresh",
-        next_run_time=None,  # fire once on startup below, then on the interval
+        next_run_time=dt.datetime.now(),
     )
     scheduler.start()
-    _refresh_job()  # populate the cache immediately instead of waiting a full interval
 
     yield
 
@@ -92,7 +98,7 @@ if STATIC_DIR.is_dir():
     if assets_dir.is_dir():
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     async def spa(full_path: str):
         if full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Not found")
