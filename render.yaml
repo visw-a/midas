@@ -1,0 +1,25 @@
+# Render Blueprint: deploy this repo as one Docker web service (frontend +
+# backend together, see repo-root Dockerfile). In the Render dashboard:
+# New -> Blueprint -> pick this repo/branch -> Render reads this file.
+# You'll be prompted to fill in SITE_PASSWORD; everything else has a
+# working default you can change later from the service's Environment tab.
+services:
+  - type: web
+    name: mii-portfolio-tracker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: SITE_PASSWORD
+        sync: false # you'll be asked for this when the blueprint deploys
+      - key: SECRET_KEY
+        generateValue: true # Render generates a random secret automatically
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DATABASE_URL
+        value: sqlite:///./midas.db
+      - key: PRICE_REFRESH_MINUTES
+        value: "15"
+      - key: BENCHMARK_TICKER
+        value: SPY

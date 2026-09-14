@@ -72,13 +72,51 @@ Visit the printed localhost URL and sign in with the `SITE_PASSWORD` you set.
 
 ## Deploying
 
-- **Backend**: any host that runs a long-lived Python process (Render,
-  Railway, Fly.io, a plain VM). Set `SITE_PASSWORD`, `SECRET_KEY` (use
-  `openssl rand -hex 32`), `CORS_ORIGINS` (your deployed frontend URL), and
-  `COOKIE_SECURE=true` once it's served over HTTPS. SQLite is fine at this
-  scale; swap `DATABASE_URL` for Postgres if you outgrow it.
-- **Frontend**: any static host (Vercel, Netlify, Cloudflare Pages). Set
-  `VITE_API_URL` to the deployed backend's URL at build time.
+The repo-root `Dockerfile` builds the frontend and copies it straight into
+the FastAPI app, which serves it (`app/main.py` mounts `app/static` and
+falls back to `index.html` for client-side routes). That means **one
+service, one URL, no CORS wiring** — deploy the Dockerfile anywhere that
+runs containers.
+
+### Render (recommended — free tier, easiest path)
+
+1. Push this repo to GitHub (already done if you're reading this on the
+   `claude/mcintire-portfolio-tracker-cmzdp7` branch).
+2. On [render.com](https://render.com), **New +** → **Blueprint**, pick this
+   repo/branch. Render reads `render.yaml` and provisions everything.
+3. It'll prompt for one value: `SITE_PASSWORD` (the shared password the club
+   uses to log in). Everything else (a random `SECRET_KEY`, etc.) is filled
+   in automatically.
+4. Deploy. Render builds the Docker image and gives you a URL like
+   `https://mii-portfolio-tracker.onrender.com` — that's the live site.
+
+Free-tier services spin down after 15 minutes idle and take ~30–50s to wake
+on the next visit; upgrade to a paid instance type later if that's annoying.
+No database setup needed — SQLite lives in the container and reseeds itself
+from `seed_data.py` on every start (see Data provenance above for why that's
+safe: nothing writeable lives only in the DB).
+
+### Anywhere else that runs Docker (Railway, Fly.io, a VM, etc.)
+
+```bash
+docker build -t midas .
+docker run -p 8000:8000 \
+  -e SITE_PASSWORD=your-password \
+  -e SECRET_KEY=$(openssl rand -hex 32) \
+  -e COOKIE_SECURE=true \
+  midas
+```
+
+Point the platform's health check at `/api/health`. Set `COOKIE_SECURE=true`
+once it's served over HTTPS (required for the login cookie to work).
+
+### Deploying frontend/backend as two separate services instead
+
+Still possible if you'd rather (e.g. a static host for the frontend + a
+separate API host): build the frontend with `VITE_API_URL` set to the
+backend's URL, deploy `backend/` as its own Python service, and set
+`CORS_ORIGINS` on the backend to the frontend's URL. The single-service
+Docker path above is simpler and is what `render.yaml` sets up.
 
 ## Repo layout
 

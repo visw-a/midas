@@ -1,4 +1,8 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Empty string means "same origin as the page" -- correct for production,
+// where the backend serves this built frontend itself. For local dev (a
+// separate `npm run dev` server on a different port than the backend),
+// set VITE_API_URL in frontend/.env (see .env.example).
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 export class ApiError extends Error {
   status: number;
