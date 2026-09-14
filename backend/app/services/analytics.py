@@ -157,6 +157,35 @@ def risk_metrics(periods: list[PeriodReturn], benchmark_periods: list[float] | N
     }
 
 
+def benchmark_series(db: Session, snapshots: list[Snapshot], ticker: str) -> dict:
+    """Aligns a benchmark's closes to the snapshot dates. Returns both the raw
+    per-period return (for cumulative/annualized benchmark return) and the
+    monthly-normalized return (for volatility/beta/tracking-error, on the
+    same common monthly basis risk_metrics uses for the portfolio itself)."""
+    from app.services.benchmark import get_benchmark_closes  # local import avoids a module-level cycle
+
+    dates = [s.date for s in snapshots]
+    closes = get_benchmark_closes(db, ticker, dates)
+    raw_returns: list[float | None] = []
+    monthly_returns: list[float] = []
+    rows = []
+    for prev_s, curr_s in zip(snapshots, snapshots[1:]):
+        c0, c1 = closes.get(prev_s.date), closes.get(curr_s.date)
+        months = max((curr_s.date.year - prev_s.date.year) * 12 + (curr_s.date.month - prev_s.date.month), 1)
+        if c0 and c1:
+            period_ret = (c1 - c0) / c0
+            monthly_ret = (1 + period_ret) ** (1 / months) - 1
+        else:
+            period_ret = None
+            monthly_ret = None
+        raw_returns.append(period_ret)
+        monthly_returns.append(monthly_ret if monthly_ret is not None else 0.0)
+        rows.append({"date": curr_s.date.isoformat(), "return_pct": period_ret})
+
+    available = len(dates) > 0 and all(closes.get(d) is not None for d in dates)
+    return {"raw_returns": raw_returns, "monthly_returns": monthly_returns, "rows": rows, "available": available}
+
+
 def sector_exposure(db: Session, snapshot: Snapshot) -> list[dict]:
     holdings = get_holdings_for_snapshot(db, snapshot.id)
     securities = {s.ticker: s for s in db.query(Security).all()}

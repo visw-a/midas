@@ -9,8 +9,7 @@ from app.config import get_settings
 from app.database import get_db
 from app.models import ActivityEvent, IncomeRecord, Security, Snapshot
 from app.security import require_auth
-from app.services import analytics
-from app.services.benchmark import get_benchmark_closes
+from app.services import analytics, insights
 from app.services.prices import get_cached_prices
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"], dependencies=[Depends(require_auth)])
@@ -129,29 +128,12 @@ def portfolio_performance(db: Session = Depends(get_db)):
     periods = analytics.compute_period_returns(snapshots)
 
     benchmark_ticker = settings.benchmark_ticker
-    dates = [s.date for s in snapshots]
-    closes = get_benchmark_closes(db, benchmark_ticker, dates)
-
-    benchmark_period_returns: list[float] = []
-    benchmark_rows = []
-    for prev_s, curr_s in zip(snapshots, snapshots[1:]):
-        c0, c1 = closes.get(prev_s.date), closes.get(curr_s.date)
-        months = max((curr_s.date.year - prev_s.date.year) * 12 + (curr_s.date.month - prev_s.date.month), 1)
-        if c0 and c1:
-            period_ret = (c1 - c0) / c0
-            monthly_ret = (1 + period_ret) ** (1 / months) - 1
-        else:
-            period_ret = None
-            monthly_ret = None
-        benchmark_period_returns.append(monthly_ret if monthly_ret is not None else 0.0)
-        benchmark_rows.append({"date": curr_s.date.isoformat(), "return_pct": period_ret})
-
-    have_full_benchmark = all(v is not None for v in [closes.get(d) for d in dates])
-    risk = analytics.risk_metrics(periods, benchmark_period_returns if have_full_benchmark else None)
+    bench = analytics.benchmark_series(db, snapshots, benchmark_ticker)
+    risk = analytics.risk_metrics(periods, bench["monthly_returns"] if bench["available"] else None)
 
     return {
         "benchmark_ticker": benchmark_ticker,
-        "benchmark_available": have_full_benchmark,
+        "benchmark_available": bench["available"],
         "periods": [
             {
                 "start_date": p.start_date.isoformat(),
@@ -165,10 +147,21 @@ def portfolio_performance(db: Session = Depends(get_db)):
             }
             for p in periods
         ],
-        "benchmark_periods": benchmark_rows,
+        "benchmark_periods": bench["rows"],
         "cumulative_return": analytics.cumulative_return(periods) if periods else None,
         "risk_metrics": risk,
     }
+
+
+@router.get("/insights")
+def portfolio_insights(db: Session = Depends(get_db)):
+    """Extended quant metrics (Sortino, information ratio, alpha, HHI/
+    effective positions, win rate, portfolio yield) plus a deterministic,
+    data-derived takeaways list -- see services/insights.py."""
+    snapshots = analytics.get_snapshots(db)
+    if not snapshots:
+        raise HTTPException(status_code=404, detail="No portfolio data has been loaded yet")
+    return insights.build_insights(db)
 
 
 @router.get("/attribution")

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { portfolioApi } from "../api/client";
-import { Card, ErrorBlock, LoadingBlock, Pill } from "../components/Card";
+import { Card, ErrorBlock, LoadingBlock, Tag } from "../components/Card";
+import { PageHeader } from "../components/PageHeader";
 import { emphasisClass, formatDate, formatPercent } from "../lib/format";
 import { useApi } from "../lib/useApi";
 
@@ -19,24 +20,22 @@ export function Attribution() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-navy-900">Performance Attribution</h1>
-          <p className="mt-1 text-sm text-navy-500">
-            Contribution to total portfolio return by position, {formatDate(data.start_date)} → {formatDate(data.end_date)}
-            {data.flow_adjusted_period && (
-              <span className="ml-2">
-                <Pill tone="solid">custodian transfer period</Pill>
-              </span>
-            )}
-          </p>
-        </div>
-        <label className="text-xs text-navy-500">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <PageHeader
+          eyebrow={`${formatDate(data.start_date)} → ${formatDate(data.end_date)}`}
+          title="Performance Attribution"
+          description={
+            data.flow_adjusted_period
+              ? "Custodian transfer period — see note below."
+              : "Contribution to total portfolio return by position."
+          }
+        />
+        <label className="mb-6 text-xs text-navy-500">
           Period ending{" "}
           <select
             value={periodEnd ?? ""}
             onChange={(e) => setPeriodEnd(e.target.value || undefined)}
-            className="ml-2 rounded border border-navy-300 bg-white px-2 py-1.5 text-xs text-navy-900"
+            className="ml-2 border border-navy-300 bg-white px-2 py-1.5 text-xs text-navy-900"
           >
             <option value="">Most recent</option>
             {data.available_periods.map((d) => (
@@ -46,7 +45,12 @@ export function Attribution() {
             ))}
           </select>
         </label>
-      </header>
+      </div>
+      {data.flow_adjusted_period && (
+        <div className="-mt-4">
+          <Tag tone="solid">Custodian transfer period</Tag>
+        </div>
+      )}
 
       <Card title="Contribution to Return" subtitle="Each holding's dollar change as a % of starting NAV">
         <div style={{ height: Math.max(chartData.length * 32, 200) }}>
@@ -72,11 +76,11 @@ export function Attribution() {
                 interval={0}
               />
               <Tooltip
-                contentStyle={{ background: "#ffffff", border: "1px solid #ccd2e4", borderRadius: 6, fontSize: 12 }}
+                contentStyle={{ background: "#ffffff", border: "1px solid #ccd2e4", borderRadius: 0, fontSize: 12 }}
                 labelStyle={{ color: "#161d33", fontWeight: 600 }}
                 formatter={(v) => `${Number(v).toFixed(2)}%`}
               />
-              <Bar dataKey="contribution" radius={[0, 3, 3, 0]}>
+              <Bar dataKey="contribution" isAnimationActive={false}>
                 {chartData.map((d, i) => (
                   <Cell key={i} fill={d.contribution >= 0 ? "#232d4b" : "#a4aec9"} />
                 ))}
@@ -90,7 +94,7 @@ export function Attribution() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-navy-200 text-left text-xs font-bold uppercase tracking-wide text-navy-500">
+              <tr className="border-b border-navy-200 text-left text-[11px] font-bold uppercase tracking-wide text-navy-500">
                 <th className="pb-2 pr-4">Ticker</th>
                 <th className="pb-2 pr-4">Name</th>
                 <th className="pb-2 pr-4 text-right">Position Return</th>
@@ -110,9 +114,9 @@ export function Attribution() {
                     {formatPercent(r.contribution_to_return, { signed: true })}
                   </td>
                   <td className="py-2.5 text-right">
-                    {r.status === "new" && <Pill tone="solid">New</Pill>}
-                    {r.status === "exited" && <Pill tone="solid">Exited</Pill>}
-                    {r.status === "held" && <Pill>Held</Pill>}
+                    {r.status === "new" && <Tag tone="solid">New</Tag>}
+                    {r.status === "exited" && <Tag tone="solid">Exited</Tag>}
+                    {r.status === "held" && <Tag>Held</Tag>}
                   </td>
                 </tr>
               ))}

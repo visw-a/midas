@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import type { Holding } from "../api/client";
 import { portfolioApi } from "../api/client";
-import { Card, ErrorBlock, LoadingBlock, Pill } from "../components/Card";
+import { Card, ErrorBlock, LoadingBlock, Tag } from "../components/Card";
+import { PageHeader } from "../components/PageHeader";
 import { emphasisClass, formatCurrency, formatNumber, formatPercent } from "../lib/format";
 import { useApi } from "../lib/useApi";
 
@@ -42,21 +43,21 @@ export function Holdings() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs font-bold uppercase tracking-wider text-navy-500">As of statement {data.as_of_statement}</p>
-        <h1 className="mt-1 text-2xl font-bold text-navy-900">Holdings</h1>
-        <p className="mt-1 text-sm text-navy-500">
-          {anyLive
+      <PageHeader
+        eyebrow={`As of statement ${data.as_of_statement}`}
+        title="Holdings"
+        description={
+          anyLive
             ? "Marked to market with the latest live quote where available; statement price used otherwise."
-            : "Live quotes unavailable right now — showing statement prices for every position."}
-        </p>
-      </header>
+            : "Live quotes unavailable right now — showing statement prices for every position."
+        }
+      />
 
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-navy-200 text-left text-xs font-bold uppercase tracking-wide text-navy-500">
+              <tr className="border-b border-navy-200 text-left text-[11px] font-bold uppercase tracking-wide text-navy-500">
                 <SortableHeader label="Ticker" sortKey="ticker" active={sortKey} dir={sortDir} onClick={toggleSort} />
                 <th className="pb-2 pr-4">Sector</th>
                 <th className="pb-2 pr-4 text-right">Qty</th>
@@ -100,7 +101,7 @@ function HoldingRow({ h }: { h: Holding }) {
       <td className="py-2.5 pr-4">
         <div className="flex items-center gap-1.5">
           <span className="tabular-nums font-bold text-navy-900">{h.ticker}</span>
-          {h.is_live_price ? <Pill tone="solid">live</Pill> : <Pill>stmt</Pill>}
+          {h.is_live_price ? <Tag tone="solid">Live</Tag> : <Tag>Stmt</Tag>}
         </div>
         <div className="text-xs text-navy-500">{h.name}</div>
       </td>

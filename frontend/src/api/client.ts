@@ -120,6 +120,52 @@ export interface PerformanceResponse {
   risk_metrics: RiskMetrics;
 }
 
+export interface PerformerRow {
+  ticker: string;
+  name: string;
+  unrealized_gain: number;
+  unrealized_gain_pct: number | null;
+}
+
+export interface InsightsMetrics {
+  sortino_ratio: number | null;
+  tracking_error: number | null;
+  information_ratio: number | null;
+  alpha: number | null;
+  benchmark_cumulative_return: number | null;
+  benchmark_annualized_return: number | null;
+  hhi: number;
+  effective_positions: number | null;
+  num_equity_positions: number;
+  top3_concentration: number;
+  win_rate: number | null;
+  best_performer: PerformerRow | null;
+  worst_performer: PerformerRow | null;
+  total_dividend_income: number;
+  portfolio_income_pct_of_nav: number | null;
+  cash_weight_current: number | null;
+  cash_weight_mean: number;
+  cash_weight_stdev: number;
+  cash_weight_zscore: number;
+  days_since_statement: number;
+}
+
+export type TakeawaySeverity = "action" | "watch" | "info";
+
+export interface Takeaway {
+  id: string;
+  severity: TakeawaySeverity;
+  headline: string;
+  detail: string;
+}
+
+export interface InsightsResponse {
+  as_of_statement: string;
+  generated_at: string;
+  metrics: InsightsMetrics;
+  takeaways: Takeaway[];
+}
+
 export interface AttributionRow {
   ticker: string;
   name: string;
@@ -177,6 +223,7 @@ export const portfolioApi = {
     api.get<AttributionResponse>(`/api/portfolio/attribution${periodEnd ? `?period_end=${periodEnd}` : ""}`),
   risk: () => api.get<RiskResponse>("/api/portfolio/risk"),
   activity: () => api.get<{ activity: ActivityRow[] }>("/api/portfolio/activity"),
+  insights: () => api.get<InsightsResponse>("/api/portfolio/insights"),
 };
 
 export const authApi = {
