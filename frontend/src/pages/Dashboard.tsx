@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Pie, PieChart } from "recharts";
 import { portfolioApi } from "../api/client";
 import { Card, ErrorBlock, LoadingBlock, Pill, StatTile } from "../components/Card";
-import { changeColorClass, formatCurrency, formatDateShort, formatPercent } from "../lib/format";
+import { emphasisClass, formatCurrency, formatDateShort, formatPercent } from "../lib/format";
 import { useApi } from "../lib/useApi";
 
-const ALLOCATION_COLORS = ["#3b82f6", "#64748b"];
+const ALLOCATION_COLORS = ["#232d4b", "#a4aec9"]; // navy-800, navy-300
 
 export function Dashboard() {
   const { data: summary, error: summaryError, loading: summaryLoading } = useApi(portfolioApi.summary);
@@ -26,10 +26,10 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-medium uppercase tracking-wider text-ink-400">
+        <p className="text-xs font-bold uppercase tracking-wider text-navy-500">
           {summary.account_label} · Statement as of {summary.as_of_statement}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold text-ink-100">Portfolio Dashboard</h1>
+        <h1 className="mt-1 text-2xl font-bold text-navy-900">Portfolio Dashboard</h1>
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -38,19 +38,14 @@ export function Dashboard() {
           value={formatCurrency(summary.live_total_value)}
           sub={
             summary.change_since_statement !== 0
-              ? `${formatCurrency(summary.change_since_statement)} (${formatPercent(summary.change_since_statement_pct, {
-                  signed: true,
-                })}) since statement`
+              ? `${formatCurrency(summary.change_since_statement, { signed: true })} (${formatPercent(
+                  summary.change_since_statement_pct,
+                  { signed: true }
+                )}) since statement`
               : "Live pricing unavailable — showing latest statement value"
           }
-          subClassName={changeColorClass(summary.change_since_statement)}
         />
-        <StatTile
-          label="Last Period Return"
-          value={formatPercent(summary.last_period_return, { signed: true })}
-          sub={summary.last_period_note ?? undefined}
-          subClassName={changeColorClass(summary.last_period_return)}
-        />
+        <StatTile label="Last Period Return" value={formatPercent(summary.last_period_return, { signed: true })} sub={summary.last_period_note ?? undefined} />
         <StatTile label="Positions" value={summary.num_positions} sub={`Custodian: ${summary.custodian}`} />
         <StatTile
           label="Cash Weight"
@@ -65,9 +60,9 @@ export function Dashboard() {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={navSeries} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
-                  <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="date" stroke="#57648a" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis
-                    stroke="#64748b"
+                    stroke="#57648a"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
@@ -76,10 +71,11 @@ export function Dashboard() {
                     domain={["dataMin - 20000", "dataMax + 20000"]}
                   />
                   <Tooltip
-                    contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: "#ffffff", border: "1px solid #ccd2e4", borderRadius: 6, fontSize: 12 }}
+                    labelStyle={{ color: "#161d33", fontWeight: 600 }}
                     formatter={(v) => formatCurrency(Number(v))}
                   />
-                  <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="value" stroke="#232d4b" strokeWidth={2} dot={{ r: 3, fill: "#232d4b" }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -94,11 +90,11 @@ export function Dashboard() {
               <PieChart>
                 <Pie data={allocation} dataKey="value" nameKey="name" innerRadius={55} outerRadius={80} paddingAngle={2}>
                   {allocation.map((_, i) => (
-                    <Cell key={i} fill={ALLOCATION_COLORS[i]} stroke="none" />
+                    <Cell key={i} fill={ALLOCATION_COLORS[i]} stroke="#ffffff" strokeWidth={2} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{ background: "#ffffff", border: "1px solid #ccd2e4", borderRadius: 6, fontSize: 12 }}
                   formatter={(v) => formatCurrency(Number(v))}
                 />
               </PieChart>
@@ -106,7 +102,7 @@ export function Dashboard() {
           </div>
           <div className="mt-2 flex justify-center gap-4 text-xs">
             {allocation.map((a, i) => (
-              <div key={a.name} className="flex items-center gap-1.5 text-ink-300">
+              <div key={a.name} className="flex items-center gap-1.5 text-navy-600">
                 <span className="h-2 w-2 rounded-full" style={{ background: ALLOCATION_COLORS[i] }} />
                 {a.name}
               </div>
@@ -119,7 +115,7 @@ export function Dashboard() {
         title="Top Holdings"
         subtitle="Largest positions by market value"
         action={
-          <Link to="/holdings" className="text-xs font-medium text-accent hover:underline">
+          <Link to="/holdings" className="text-xs font-bold text-navy-800 hover:underline">
             View all →
           </Link>
         }
@@ -127,7 +123,7 @@ export function Dashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-ink-800 text-left text-xs uppercase tracking-wide text-ink-400">
+              <tr className="border-b border-navy-200 text-left text-xs font-bold uppercase tracking-wide text-navy-500">
                 <th className="pb-2 pr-4">Ticker</th>
                 <th className="pb-2 pr-4">Name</th>
                 <th className="pb-2 pr-4 text-right">Weight</th>
@@ -137,17 +133,17 @@ export function Dashboard() {
             </thead>
             <tbody>
               {topHoldings.map((h) => (
-                <tr key={h.ticker} className="border-b border-ink-800/60 last:border-0">
-                  <td className="py-2.5 pr-4 font-mono-nums font-medium text-ink-100">
+                <tr key={h.ticker} className="border-b border-navy-100 last:border-0">
+                  <td className="py-2.5 pr-4 font-bold text-navy-900">
                     <span className="flex items-center gap-1.5">
                       {h.ticker}
-                      {!h.is_live_price && <Pill tone="neutral">stmt</Pill>}
+                      {!h.is_live_price && <Pill>stmt</Pill>}
                     </span>
                   </td>
-                  <td className="py-2.5 pr-4 text-ink-300">{h.name}</td>
-                  <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatPercent(h.weight)}</td>
-                  <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatCurrency(h.market_value)}</td>
-                  <td className={`py-2.5 text-right font-mono-nums ${changeColorClass(h.unrealized_gain)}`}>
+                  <td className="py-2.5 pr-4 text-navy-600">{h.name}</td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatPercent(h.weight)}</td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatCurrency(h.market_value)}</td>
+                  <td className={`py-2.5 text-right tabular-nums ${emphasisClass(h.unrealized_gain)}`}>
                     {formatCurrency(h.unrealized_gain)}
                   </td>
                 </tr>

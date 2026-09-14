@@ -4,26 +4,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        // brand-neutral navy/slate palette with a single accent for positive/gain
-        ink: {
-          950: "#0b1220",
-          900: "#0f172a",
-          800: "#161f34",
-          700: "#1e293b",
-          600: "#334155",
-          500: "#475569",
-          400: "#64748b",
-          300: "#94a3b8",
-          200: "#cbd5e1",
-          100: "#e2e8f0",
+        // MII brand: navy + white only. A single tint/shade scale of the
+        // same navy hue (no other hues) gives hierarchy without breaking
+        // that rule -- text/sidebar at the dark end, borders/backgrounds
+        // at the light end, white everywhere else.
+        navy: {
+          50: "#f4f6fa",
+          100: "#e6e9f2",
+          200: "#ccd2e4",
+          300: "#a4aec9",
+          400: "#7885a8",
+          500: "#57648a",
+          600: "#414d70",
+          700: "#303a58",
+          800: "#232d4b", // primary brand navy
+          900: "#161d33",
+          950: "#0c1120",
         },
-        gain: "#1f9d6b",
-        loss: "#d64545",
-        accent: "#3b82f6",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        // Arial first, with the closest web-safe fallbacks so non-Windows/Mac
+        // systems still render something near-identical.
+        sans: ["Arial", "Helvetica", "ui-sans-serif", "sans-serif"],
       },
     },
   },

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Holding } from "../api/client";
 import { portfolioApi } from "../api/client";
 import { Card, ErrorBlock, LoadingBlock, Pill } from "../components/Card";
-import { changeColorClass, formatCurrency, formatNumber, formatPercent } from "../lib/format";
+import { emphasisClass, formatCurrency, formatNumber, formatPercent } from "../lib/format";
 import { useApi } from "../lib/useApi";
 
 type SortKey = "market_value" | "weight" | "unrealized_gain" | "ticker" | "day_change_pct";
@@ -43,11 +43,9 @@ export function Holdings() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-medium uppercase tracking-wider text-ink-400">
-          As of statement {data.as_of_statement}
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold text-ink-100">Holdings</h1>
-        <p className="mt-1 text-sm text-ink-400">
+        <p className="text-xs font-bold uppercase tracking-wider text-navy-500">As of statement {data.as_of_statement}</p>
+        <h1 className="mt-1 text-2xl font-bold text-navy-900">Holdings</h1>
+        <p className="mt-1 text-sm text-navy-500">
           {anyLive
             ? "Marked to market with the latest live quote where available; statement price used otherwise."
             : "Live quotes unavailable right now — showing statement prices for every position."}
@@ -58,27 +56,13 @@ export function Holdings() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-ink-800 text-left text-xs uppercase tracking-wide text-ink-400">
+              <tr className="border-b border-navy-200 text-left text-xs font-bold uppercase tracking-wide text-navy-500">
                 <SortableHeader label="Ticker" sortKey="ticker" active={sortKey} dir={sortDir} onClick={toggleSort} />
                 <th className="pb-2 pr-4">Sector</th>
                 <th className="pb-2 pr-4 text-right">Qty</th>
                 <th className="pb-2 pr-4 text-right">Price</th>
-                <SortableHeader
-                  label="Day"
-                  sortKey="day_change_pct"
-                  active={sortKey}
-                  dir={sortDir}
-                  onClick={toggleSort}
-                  align="right"
-                />
-                <SortableHeader
-                  label="Weight"
-                  sortKey="weight"
-                  active={sortKey}
-                  dir={sortDir}
-                  onClick={toggleSort}
-                  align="right"
-                />
+                <SortableHeader label="Day" sortKey="day_change_pct" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" />
+                <SortableHeader label="Weight" sortKey="weight" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" />
                 <SortableHeader
                   label="Market Value"
                   sortKey="market_value"
@@ -112,26 +96,24 @@ export function Holdings() {
 
 function HoldingRow({ h }: { h: Holding }) {
   return (
-    <tr className="border-b border-ink-800/60 last:border-0 hover:bg-ink-800/30">
+    <tr className="border-b border-navy-100 last:border-0 hover:bg-navy-50">
       <td className="py-2.5 pr-4">
         <div className="flex items-center gap-1.5">
-          <span className="font-mono-nums font-semibold text-ink-100">{h.ticker}</span>
-          {h.is_live_price ? <Pill tone="good">live</Pill> : <Pill tone="neutral">stmt</Pill>}
+          <span className="tabular-nums font-bold text-navy-900">{h.ticker}</span>
+          {h.is_live_price ? <Pill tone="solid">live</Pill> : <Pill>stmt</Pill>}
         </div>
-        <div className="text-xs text-ink-400">{h.name}</div>
+        <div className="text-xs text-navy-500">{h.name}</div>
       </td>
-      <td className="py-2.5 pr-4 text-ink-300">{h.sector}</td>
-      <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatNumber(h.quantity, 2)}</td>
-      <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatCurrency(h.current_price)}</td>
-      <td className={`py-2.5 pr-4 text-right font-mono-nums ${changeColorClass(h.day_change_pct)}`}>
+      <td className="py-2.5 pr-4 text-navy-600">{h.sector}</td>
+      <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatNumber(h.quantity, 2)}</td>
+      <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatCurrency(h.current_price)}</td>
+      <td className={`py-2.5 pr-4 text-right tabular-nums ${emphasisClass(h.day_change_pct)}`}>
         {h.day_change_pct !== null ? formatPercent(h.day_change_pct, { signed: true }) : "—"}
       </td>
-      <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatPercent(h.weight)}</td>
-      <td className="py-2.5 pr-4 text-right font-mono-nums font-medium text-ink-100">
-        {formatCurrency(h.market_value)}
-      </td>
-      <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-400">{formatCurrency(h.cost_basis)}</td>
-      <td className={`py-2.5 text-right font-mono-nums ${changeColorClass(h.unrealized_gain)}`}>
+      <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatPercent(h.weight)}</td>
+      <td className="py-2.5 pr-4 text-right tabular-nums font-bold text-navy-900">{formatCurrency(h.market_value)}</td>
+      <td className="py-2.5 pr-4 text-right tabular-nums text-navy-500">{formatCurrency(h.cost_basis)}</td>
+      <td className={`py-2.5 text-right tabular-nums ${emphasisClass(h.unrealized_gain)}`}>
         {formatCurrency(h.unrealized_gain)}
       </td>
     </tr>
@@ -159,7 +141,7 @@ function SortableHeader({
       className={`cursor-pointer select-none pb-2 pr-4 ${align === "right" ? "text-right" : "text-left"}`}
       onClick={() => onClick(sortKey)}
     >
-      <span className={isActive ? "text-ink-100" : ""}>
+      <span className={isActive ? "text-navy-900" : ""}>
         {label} {isActive && (dir === 1 ? "↑" : "↓")}
       </span>
     </th>

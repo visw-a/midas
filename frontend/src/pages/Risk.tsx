@@ -15,9 +15,9 @@ export function Risk() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-medium uppercase tracking-wider text-ink-400">As of statement {data.as_of_statement}</p>
-        <h1 className="mt-1 text-2xl font-semibold text-ink-100">Risk & Concentration</h1>
-        <p className="mt-1 text-sm text-ink-400">
+        <p className="text-xs font-bold uppercase tracking-wider text-navy-500">As of statement {data.as_of_statement}</p>
+        <h1 className="mt-1 text-2xl font-bold text-navy-900">Risk & Concentration</h1>
+        <p className="mt-1 text-sm text-navy-500">
           Policy guardrails: no single position over {formatPercent(data.single_name_limit)} of NAV, no sector over{" "}
           {formatPercent(data.sector_limit)} of NAV.
         </p>
@@ -27,10 +27,10 @@ export function Risk() {
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={sectorChartData} layout="vertical" margin={{ left: 8, right: 24, top: 4, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e6e9f2" horizontal={false} />
               <XAxis
                 type="number"
-                stroke="#64748b"
+                stroke="#57648a"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -39,7 +39,7 @@ export function Risk() {
               <YAxis
                 type="category"
                 dataKey="sector"
-                stroke="#94a3b8"
+                stroke="#414d70"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -47,12 +47,13 @@ export function Risk() {
                 interval={0}
               />
               <Tooltip
-                contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
+                contentStyle={{ background: "#ffffff", border: "1px solid #ccd2e4", borderRadius: 6, fontSize: 12 }}
+                labelStyle={{ color: "#161d33", fontWeight: 600 }}
                 formatter={(v, _n, item) => [`${Number(v).toFixed(1)}% (${formatCurrency((item.payload as { market_value: number }).market_value)})`, "Weight"]}
               />
-              <Bar dataKey="pct" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="pct" radius={[0, 3, 3, 0]}>
                 {sectorChartData.map((s, i) => (
-                  <Cell key={i} fill={s.over_limit ? "#d64545" : "#3b82f6"} />
+                  <Cell key={i} fill={s.over_limit ? "#232d4b" : "#7885a8"} />
                 ))}
               </Bar>
             </BarChart>
@@ -64,7 +65,7 @@ export function Risk() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-ink-800 text-left text-xs uppercase tracking-wide text-ink-400">
+              <tr className="border-b border-navy-200 text-left text-xs font-bold uppercase tracking-wide text-navy-500">
                 <th className="pb-2 pr-4">Ticker</th>
                 <th className="pb-2 pr-4">Name</th>
                 <th className="pb-2 pr-4 text-right">Market Value</th>
@@ -74,13 +75,13 @@ export function Risk() {
             </thead>
             <tbody>
               {data.concentration.map((c) => (
-                <tr key={c.ticker} className="border-b border-ink-800/60 last:border-0">
-                  <td className="py-2.5 pr-4 font-mono-nums font-medium text-ink-100">{c.ticker}</td>
-                  <td className="py-2.5 pr-4 text-ink-300">{c.name}</td>
-                  <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatCurrency(c.market_value)}</td>
-                  <td className="py-2.5 pr-4 text-right font-mono-nums text-ink-200">{formatPercent(c.weight)}</td>
+                <tr key={c.ticker} className="border-b border-navy-100 last:border-0">
+                  <td className="py-2.5 pr-4 tabular-nums font-bold text-navy-900">{c.ticker}</td>
+                  <td className="py-2.5 pr-4 text-navy-600">{c.name}</td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatCurrency(c.market_value)}</td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-navy-800">{formatPercent(c.weight)}</td>
                   <td className="py-2.5 text-right">
-                    {c.over_limit ? <Pill tone="warn">Over limit</Pill> : <Pill tone="good">OK</Pill>}
+                    {c.over_limit ? <Pill tone="solid">Over limit</Pill> : <Pill>OK</Pill>}
                   </td>
                 </tr>
               ))}

@@ -9,11 +9,7 @@ body,
 }
 
 body {
-  @apply bg-ink-950 text-ink-100 font-sans antialiased;
-}
-
-.font-mono-nums {
-  font-variant-numeric: tabular-nums;
+  @apply bg-navy-50 text-navy-900 font-sans antialiased;
 }
 
 ::-webkit-scrollbar {
@@ -24,6 +20,6 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: theme("colors.navy.300");
   border-radius: 999px;
 }

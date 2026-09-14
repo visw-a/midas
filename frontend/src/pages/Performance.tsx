@@ -1,7 +1,7 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { portfolioApi } from "../api/client";
 import { Card, ErrorBlock, LoadingBlock, Pill, StatTile } from "../components/Card";
-import { changeColorClass, formatDate, formatPercent } from "../lib/format";
+import { formatDate, formatPercent } from "../lib/format";
 import { useApi } from "../lib/useApi";
 
 export function Performance() {
@@ -20,8 +20,8 @@ export function Performance() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold text-ink-100">Performance</h1>
-        <p className="mt-1 text-sm text-ink-400">
+        <h1 className="text-2xl font-bold text-navy-900">Performance</h1>
+        <p className="mt-1 text-sm text-navy-500">
           Period-over-period returns computed from each statement's reported NAV, benchmarked against{" "}
           {data.benchmark_ticker}
           {!data.benchmark_available && " (benchmark data unavailable right now — showing portfolio only)"}.
@@ -29,18 +29,10 @@ export function Performance() {
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          label="Cumulative Return"
-          value={formatPercent(data.cumulative_return, { signed: true })}
-          subClassName={changeColorClass(data.cumulative_return)}
-        />
-        <StatTile
-          label="Annualized Return"
-          value={formatPercent(risk.annualized_return, { signed: true })}
-          subClassName={changeColorClass(risk.annualized_return)}
-        />
+        <StatTile label="Cumulative Return" value={formatPercent(data.cumulative_return, { signed: true })} />
+        <StatTile label="Annualized Return" value={formatPercent(risk.annualized_return, { signed: true })} />
         <StatTile label="Annualized Volatility" value={formatPercent(risk.annualized_volatility)} />
-        <StatTile label="Max Drawdown" value={formatPercent(risk.max_drawdown)} subClassName="text-loss" />
+        <StatTile label="Max Drawdown" value={formatPercent(risk.max_drawdown)} />
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
         <StatTile
@@ -59,27 +51,29 @@ export function Performance() {
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-              <XAxis dataKey="label" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis
-                stroke="#64748b"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v) => `${v}%`}
-                width={48}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e6e9f2" vertical={false} />
+              <XAxis dataKey="label" stroke="#57648a" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#57648a" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} width={48} />
               <Tooltip
-                contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
+                contentStyle={{ background: "#ffffff", border: "1px solid #ccd2e4", borderRadius: 6, fontSize: 12 }}
+                labelStyle={{ color: "#161d33", fontWeight: 600 }}
                 formatter={(v) => `${Number(v).toFixed(2)}%`}
               />
-              <Bar dataKey="portfolio" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="portfolio" radius={[3, 3, 0, 0]}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill={d.portfolio >= 0 ? "#1f9d6b" : "#d64545"} />
+                  <Cell key={i} fill={d.portfolio >= 0 ? "#232d4b" : "#a4aec9"} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+        </div>
+        <div className="mt-2 flex justify-center gap-4 text-xs text-navy-500">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm bg-navy-800" /> Positive
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm bg-navy-300" /> Negative
+          </span>
         </div>
       </Card>
 
@@ -87,7 +81,7 @@ export function Performance() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-ink-800 text-left text-xs uppercase tracking-wide text-ink-400">
+              <tr className="border-b border-navy-200 text-left text-xs font-bold uppercase tracking-wide text-navy-500">
                 <th className="pb-2 pr-4">Period</th>
                 <th className="pb-2 pr-4 text-right">Return</th>
                 <th className="pb-2 pr-4">Notes</th>
@@ -95,15 +89,15 @@ export function Performance() {
             </thead>
             <tbody>
               {data.periods.map((p) => (
-                <tr key={p.end_date} className="border-b border-ink-800/60 last:border-0">
-                  <td className="py-2.5 pr-4 text-ink-200">
+                <tr key={p.end_date} className="border-b border-navy-100 last:border-0">
+                  <td className="py-2.5 pr-4 text-navy-800">
                     {formatDate(p.start_date)} → {formatDate(p.end_date)}
                   </td>
-                  <td className={`py-2.5 pr-4 text-right font-mono-nums ${changeColorClass(p.return_pct)}`}>
+                  <td className="py-2.5 pr-4 text-right tabular-nums font-semibold text-navy-900">
                     {formatPercent(p.return_pct, { signed: true })}
                   </td>
-                  <td className="py-2.5 pr-4 text-xs text-ink-400">
-                    {p.flow_adjusted && <Pill tone="neutral">flow-adjusted</Pill>} {p.note}
+                  <td className="py-2.5 pr-4 text-xs text-navy-500">
+                    {p.flow_adjusted && <Pill>flow-adjusted</Pill>} {p.note}
                   </td>
                 </tr>
               ))}

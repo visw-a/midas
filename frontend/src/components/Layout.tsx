@@ -14,12 +14,14 @@ export function Layout() {
   const { logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-ink-950">
+    <div className="min-h-screen bg-navy-50">
       <div className="mx-auto flex max-w-7xl">
-        <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-ink-800 px-4 py-6 md:flex">
+        <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-navy-800 px-4 py-6 md:flex">
           <div className="mb-8 px-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">MII</p>
-            <p className="mt-0.5 text-sm font-semibold text-ink-100">Portfolio Tracker</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-navy-300">
+              McIntire Investment Institute
+            </p>
+            <p className="mt-0.5 text-sm font-bold text-white">Portfolio Tracker</p>
           </div>
           <nav className="flex flex-1 flex-col gap-1">
             {NAV_ITEMS.map((item) => (
@@ -28,10 +30,8 @@ export function Layout() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-accent/15 text-accent"
-                      : "text-ink-300 hover:bg-ink-800 hover:text-ink-100"
+                  `rounded px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive ? "bg-white text-navy-800" : "text-navy-200 hover:bg-navy-700 hover:text-white"
                   }`
                 }
               >
@@ -41,7 +41,7 @@ export function Layout() {
           </nav>
           <button
             onClick={() => logout()}
-            className="mt-4 rounded-lg px-3 py-2 text-left text-sm font-medium text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100"
+            className="mt-4 rounded px-3 py-2 text-left text-sm font-medium text-navy-300 transition-colors hover:bg-navy-700 hover:text-white"
           >
             Sign out
           </button>
@@ -59,7 +59,7 @@ export function Layout() {
 function MobileNav() {
   const { logout } = useAuth();
   return (
-    <div className="mb-6 flex items-center justify-between gap-2 overflow-x-auto md:hidden">
+    <div className="mb-6 flex items-center justify-between gap-2 overflow-x-auto rounded-lg bg-navy-800 px-2 py-2 md:hidden">
       <div className="flex gap-1">
         {NAV_ITEMS.map((item) => (
           <NavLink
@@ -67,8 +67,8 @@ function MobileNav() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium ${
-                isActive ? "bg-accent/15 text-accent" : "text-ink-300"
+              `whitespace-nowrap rounded px-2.5 py-1.5 text-xs font-medium ${
+                isActive ? "bg-white text-navy-800" : "text-navy-200"
               }`
             }
           >
@@ -76,7 +76,7 @@ function MobileNav() {
           </NavLink>
         ))}
       </div>
-      <button onClick={() => logout()} className="whitespace-nowrap text-xs text-ink-400">
+      <button onClick={() => logout()} className="whitespace-nowrap text-xs text-navy-300">
         Sign out
       </button>
     </div>
